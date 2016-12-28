@@ -3,7 +3,7 @@ Doctrine implementation for Watajax
 
 ## Foreword
 
-I created this class because I wanted to use Watajax under Symfony 2. I chose to use Watajax because jQuery DataTables can't handle >1000 entries very well (at least when I tried it a few years ago).
+I created this class because I wanted to use WATAJAX under Symfony 2. I chose to use Watajax because jQuery DataTables can't handle >1000 entries very well (at least when I tried it a few years ago).
 
 I'll probably not continue working on this class, so feel free to suggest changes or fork it.
 
@@ -11,6 +11,9 @@ I'll probably not continue working on this class, so feel free to suggest change
 
 Please note that you'll still need the basic Watajax components which you'll find on Google Code: https://code.google.com/archive/p/watajax/
 That also means the WatajaxSql.php class has to be included!
+
+WATAJAX's javascript uses a numeric _table\_id_ to identify the table for requesting data from.
+Trying to reflect this behaviour, you'll have to add the Model you want to use: ``WatajaxDoctrine::addTable(Vendor\Models\Classname::class);``
 
 ## New options
 These options were tested for a m:1 relation in Symfony 2.
