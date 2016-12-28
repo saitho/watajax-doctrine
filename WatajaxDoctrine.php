@@ -1,6 +1,5 @@
 <?php
-namespace saitho\WatajaxDoctrine;
-use Doctrine\Common\Collections\Collection;
+namespace AppBundle\Utils;
 
 /**
  * Class WatajaxDoctrine
@@ -19,13 +18,13 @@ class WatajaxDoctrine extends \Watajax {
 	protected $em, $qb;
 	protected $tables = [];
 	
-	protected $table = "";
-	protected $encoding = "UTF-8";
-	protected $where = "";
+	protected $table = '';
+	protected $encoding = 'UTF-8';
+	protected $where = '';
 	
 	
 	public function __construct(\Doctrine\ORM\EntityManager $entityManager) {
-		//parent::__construct():
+		//parent::__construct();
 		$this->perPage = (!empty($_GET['watajax_per_page']) && is_numeric($_GET['watajax_per_page'])) ? intval($_GET['watajax_per_page']) : 10;
 		$this->page = (!empty($_GET['watajax_page']) && is_numeric($_GET['watajax_page'])) ? intval($_GET['watajax_page']) : 1;
 		$this->sortBy = !empty($_GET['watajax_sortBy']) ? $_GET['watajax_sortBy'] : null;
@@ -37,16 +36,16 @@ class WatajaxDoctrine extends \Watajax {
 		$this->em = $entityManager;
 		$this->qb = new \Doctrine\ORM\QueryBuilder($this->em);
 	}
-		
+	
 	public function searchFilterData() {
-		if ($this->search != "") {
-			$where = "";
+		if (!empty($this->search)) {
+			$where = '';
 			foreach($this->columns as $key => $value) {
-				if (empty($value["virtual"])) {
-					$where .= "`$key` LIKE '%".$this->search."%' OR ";
+				if (empty($value['virtual'])) {
+					$where .= "a.$key LIKE '%".$this->search."%' OR ";
 				}
 			}
-			$where = "(".rtrim($where, " OR ").")";
+			$where = '('.rtrim($where, ' OR ').')';
 			$this->where = $where;
 		}
 	}
@@ -118,19 +117,19 @@ class WatajaxDoctrine extends \Watajax {
 		}
 		return $values;
 	}
-		
+	
 	public function transformColumn($col, $data, $row) {
-		if(is_string($data) && $this->encoding == "UTF-8") {
+		if(is_string($data) && $this->encoding == 'UTF-8') {
 			$data = utf8_encode($data);
 		}
-		if (empty($this->columns[$col]["transform"])) {
+		if (empty($this->columns[$col]['transform'])) {
 			return $data;
 		}
 		
 		$replaceValues = $this->getReplaceValues($col, $row);
 		$replace = array_keys($replaceValues);
 		$replaceRow = array_values($replaceValues);
-				
+		
 		foreach(array_keys($this->columns) as $k) {
 			$getterName = 'get'.ucfirst($this->camelCase($k));
 			$object = $row;
@@ -154,7 +153,7 @@ class WatajaxDoctrine extends \Watajax {
 			$replaceRow[] = $value;
 			$replace[] = "!".$k;
 		}
-		$data = str_replace($replace, $replaceRow, $this->columns[$col]["transform"]);
+		$data = str_replace($replace, $replaceRow, $this->columns[$col]['transform']);
 		return $data;
 	}
 	
@@ -185,17 +184,16 @@ class WatajaxDoctrine extends \Watajax {
 		
 		$data = array();
 		$limit_start = (($this->page-1)*$this->perPage);
-		
-		$repo = $this->em->getRepository($this->getCurrentTable());
-		//$result = $repo->findBy([], $sortBy, $this->perPage, $limit_start);
-		
+		if(!empty($this->where)) {
+			$this->qb->where($this->where);
+		}
 		
 		$dql = $this->qb->getDQL();
 		$query = $this->em->createQuery($dql)
 			->setFirstResult($limit_start)
 			->setMaxResults($this->perPage);
 		$result = $query->execute();
-				
+		
 		foreach($result AS $row) {
 			$object = $row;
 			if(is_array($row) && is_object($row[0])) {
@@ -235,13 +233,13 @@ class WatajaxDoctrine extends \Watajax {
 		$sorted_data = $this->getData();
 		
 		foreach($sorted_data as $row_id => $row_data) {
-			echo "<tr id='$row_id'>";
+			echo '<tr id="'.$row_id.'">';
 			foreach($this->columns as $column_id => $column_data) {
-				if (empty($this->columns[$column_id]["hide"])) {
-					echo "<td id='".$column_id."_data'>".$row_data[$column_id]."</td>";
+				if (empty($this->columns[$column_id]['hide'])) {
+					echo '<td id="'.$column_id.'_data">'.$row_data[$column_id].'</td>';
 				}
 			}
-			echo "</tr>";
+			echo '</tr>';
 		}
 	}
 	
